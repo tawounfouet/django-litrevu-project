@@ -29,7 +29,7 @@ class LoginPage(View):
             if user is not None:
                 login(request, user)
                 #message = f"Bonjour {user.username} ! Vous êtes connecté"
-                return redirect('home')
+                return redirect('review:home')
             else:
                 message = 'Idendentifiants invalides'
 

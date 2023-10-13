@@ -1,4 +1,5 @@
 #db.sqlite3
+guide.md
 .env
 *.pyc
 __pycache__/
