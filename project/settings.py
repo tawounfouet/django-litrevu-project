@@ -58,7 +58,9 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR.joinpath('templates'),  # <--- add this line
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -126,7 +128,7 @@ STATIC_URL = '/static/'
 # STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 #STATICFILES_DIRS = [BASE_DIR.joinpath('static/')]
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+#STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = (str(BASE_DIR.joinpath('static')),)
 
@@ -138,7 +140,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'authentication.User'
 
-LOGIN_URL = 'login'
+LOGIN_URL = 'authentication:login'
 LOGIN_REDIRECT_URL = 'review:home'
 LOGOUT_REDIRECT_URL = LOGIN_URL
 
