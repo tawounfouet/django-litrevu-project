@@ -113,4 +113,7 @@ python manage.py migrate
 # Création d'un super utilisateur
 python manage.py createsuperuser
 
+python manage.py runserver 8081
+```
+
 ```
