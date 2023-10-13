@@ -1,11 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-
+# Create your models here.
 class User(AbstractUser):
-    profile_photo = models.ImageField(verbose_name='photo de profil')
-    follows = models.ManyToManyField( 'self', 
-                                     symmetrical=True,
-                                     verbose_name='suit'
-    )
-
+    zip_code = models.CharField(max_length=5, default='00000')
