@@ -1,0 +1,17 @@
+{% extends 'base.html' %} 
+
+{% block title%}
+<p>All Tickets</p>
+{% endblock title%}
+
+{% block content %}
+{% if tickets %}
+    <ul>
+    {% for ticket in tickets %}
+        <li><a href="{% url 'review:ticket_detail' ticket.id %}">{{ ticket.title }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No tickets are available.</p>
+{% endif %}
+{% endblock content %}

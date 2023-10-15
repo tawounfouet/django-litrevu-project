@@ -22,17 +22,23 @@
                 <p><a href="{% url 'review:home' %}">Home</a></p>
                 <p><a href="{% url 'review:about' %}">About</a></p>
                 <p><a href="{% url 'review:contact' %}">Contact</a></p>
+                <p><a href="{% url 'review:new_ticket' %}">Créer Ticket</a></p>
+                <p><a href="{% url 'review:ticket_list' %}">Liste des tickets</a></p>
+                <p><a href="{% url 'review:new_ticket' %}">Faire un Critique</a></p>
+
 
                 <p><a href="{% url 'authentication:logout' %}">Se déconnecter</a></p>
             {% endif %}
         </div>
         <div class="main">
+            {% if user.is_authenticated %}
+                {% block title%}
+                {% endblock title%}</p>
+            {% endif %}
+
             {% block content %}{% endblock content %}
             
-            {% if user.is_authenticated %}
-            {% block title%}
-            {% endblock title%}</p>
-        {% endif %}
+    
         </div>
 
 

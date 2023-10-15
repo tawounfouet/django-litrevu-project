@@ -1,0 +1,17 @@
+{% extends 'base.html' %} 
+
+{% block title%}
+<p>Ticket Detail -{{ ticket.id }} </p>
+{% endblock title%}
+
+{% block content %}
+<h1>{{ ticket.title }}</h1>
+<p>{{ ticket.description }}</p>
+<!-- Ticket Image -->
+{% if ticket.image %}
+    <img src="{{ ticket.image.url }}" alt="Ticket Image">
+{% endif %}
+
+<!-- Ticket Comments -->
+
+{% endblock %}
