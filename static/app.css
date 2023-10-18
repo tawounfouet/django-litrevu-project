@@ -36,6 +36,11 @@ html {
     padding: 20px;
 }
 
+/* .wrapper {
+    min-height: 100%;
+    margin-bottom: -50px;
+} */
+
 .avatar {
     width: 80%;
     border-radius: 10%;
