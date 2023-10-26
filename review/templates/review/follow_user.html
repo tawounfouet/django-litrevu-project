@@ -1,4 +1,4 @@
-{% extends 'base.html' %} 
+{% extends 'base2.html' %} 
 {% load crispy_forms_tags %} 
 
 {% block title%}
@@ -6,9 +6,8 @@
 {% endblock title%} 
 
 {% block content %}
-<div class="container">
-  <h1>Suivre un utilisateur</h1>
-  <hr />
+<!-- Rajouter de la marge bootstrap : m-5 -->
+<div class="container m-4">
   <form method="post">
     {% csrf_token %} 
     {{ form|crispy }}
@@ -29,7 +28,6 @@
           </div>
         {% endfor %}
       {% endif %}
- 
   </form>
 
   {% if form.errors %}
@@ -37,14 +35,12 @@
     {{ form.non_field_errors }} {{ form.user_to_follow.errors }}
   </div>
   {% endif %}
+</div>
 
 
 
- 
-  <br />
-
-
-
+<div class="container m-5">
+    <h4>Utilisateurs que vous suivez</h4>
   <ul>
     {% for follow in user_following %}
         <li>
@@ -57,10 +53,12 @@
         {% empty %}
         <li>Vous ne suivez personne pour le moment.</li>
     {% endfor %}
-</ul>
+    </ul>
+</div>
 
 
-    <h2>Utilisateurs qui vous suivent</h2>
+<div class="container m-5">
+    <h4>Utilisateurs qui vous suivent</h4>
     <ul>
       {% for follow in user_followers %}
         <li>{{ follow.user.username }}</li>

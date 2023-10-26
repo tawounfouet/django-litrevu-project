@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib import messages
 
+from django.views.generic.edit import CreateView
 from authentication import models
 from authentication.models import User
 from .models import Review, Ticket, UserFollows
@@ -27,15 +28,27 @@ def contact(request):
     return render(request, 'review/contact.html')
 
 
-def new_ticket(request):
-    if request.method == 'POST':
-        form = TicketForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return HttpResponse("Ticket created successfully")
-    else:
-        form = TicketForm()
-    return render(request, 'review/ticket_create.html', {'form': form})
+# def new_ticket(request):
+#     if request.method == 'POST':
+#         form = TicketForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             form.save()
+#             return HttpResponse("Ticket created successfully")
+#     else:
+#         form = TicketForm()
+#     return render(request, 'review/ticket_create.html', {'form': form})
+
+class TicketCreateView(CreateView):
+    model = Ticket
+    fields = ['title', 'description', 'image']
+    template_name = 'review/ticket_create.html'  # Remplacez par le nom de votre template
+    success_url = reverse_lazy('review:ticket_list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user  # Récupérer l'utilisateur connecté
+        return super().form_valid(form)
+
+
 
 
 # all tickets view
@@ -62,6 +75,16 @@ def new_review(request):
     else:
         form = ReviewForm()
     return render(request, 'review/review_create.html', {'form': form})
+
+class ReviewCreateView(CreateView):
+    model = Review
+    fields = ['ticket', 'rating', 'headline', 'body']
+    template_name = 'review/review_create.html' 
+    success_url = reverse_lazy('review:ticket_list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user  # Récupérer l'utilisateur connecté
+        return super().form_valid(form)
 
 
 

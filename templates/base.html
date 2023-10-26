@@ -11,6 +11,9 @@
         <link rel="stylesheet" href="{% static 'app.css' %}">
     </head>
     <body>
+
+
+        <!-- ===== Block sidebar ===== -->
         <div class="sidebar">
             <h1>LITRevu</h1>
             <hr>
@@ -27,9 +30,8 @@
            
                 
                 {% comment %} <p><a href="{% url 'review:user_profile' username=request.user.username %}">Profile</a></p> {% endcomment %}
-                <p><a href="{% url 'review:user_profile' username=user.username %}">Profile</a></p>
+            
                 <p><a href="{% url 'review:home' %}">Flux</a></p>
-                <p><a href="{% url 'review:follow_user' %}">Abonnements</a></p>
                 <p><a href="{% url 'review:new_ticket' %}">Créer Ticket</a></p>
                 <p><a href="{% url 'review:ticket_list' %}">Liste des tickets</a></p>
                 <p><a href="{% url 'review:new_review' %}">Faire un Critique</a></p>
@@ -38,20 +40,41 @@
                 <p><a href="{% url 'authentication:logout' %}">Se déconnecter</a></p>
             {% endif %}
         </div>
+     
+    
+        
 
         <div class="main">
            
     
-            <header>
-                 <nav  class="navbar navbar-expand-lg navbar-dark navbar-sm  bg-success ">
-                    <a class="navbar-brand flex-grow-1 text-center small-title" style="color: #fff; left: 50%; transform: translateX(-50%); position: relative;">
-                        {% block title %} {% endblock title%}
+            {% comment %} <header>
+                <nav class="navbar navbar-expand-lg" style="background-color: #fff">
+                    <a class="navbar-brand flex-grow-1 text-center small-title" style="color: black; left: 50%; transform: translateX(-50%); position: relative;">
+                       
                      </a>
                 </nav>
-            </header>
+            </header> {% endcomment %}
 
             <!-- ===== Block contente (ROOT) ===== -->
-            {% block content %}{% endblock content %}
+            <div class="container ">
+                <div class="container m-5">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="border p-4">
+                                
+                                {% block title %}  
+                                {% endblock title%}
+
+
+                                {% block content %}
+                
+                                {% endblock content %}
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
      <!-- Bootstrap 5 JS -->
@@ -63,3 +86,8 @@
      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.8/jquery.mask.min.js" integrity="sha512-hAJgR+pK6+s492clbGlnrRnt2J1CJK6kZ82FZy08tm6XG2Xl/ex9oVZLE6Krz+W+Iv4Gsr8U2mGMdh0ckRH61Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     </body>
 </html>
+
+{% comment %} reload staticfile
+python manage.py collectstatic
+
+ {% endcomment %}

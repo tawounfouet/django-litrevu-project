@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LITRevu</title>
+    <!-- Bootstrap 4 CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
+    <!-- FontAwsome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="{% static 'app.css' %}" />
+
+    <style>
+        /* Custom CSS styles */
+        .border-right {
+            border-right: 2px solid #333; /* Customize the border color and width */
+        }
+
+        .sidebar {
+            background-color: #951313; /* Customize the sidebar background color */
+            padding: 20px;
+        }
+
+        /* Add more custom styles as needed */
+    </style>
+  </head>
+  <body>
+
+
+    {% if user.is_authenticated %}
+    <!-- Navbar c1=#e3f2fd c2=#198753-->
+    <nav class="navbar navbar-expand-lg" style="background-color: #e3f2fd">
+        <div class="container">
+            <a class="navbar-brand" href="#">LITReview</a>
+    
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+    
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+                <!-- Empty left-aligned list to push content to the right -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
+                
+                <!-- Right-aligned list for navigation links -->
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url 'review:home' %}">Flux</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url 'review:ticket_list' %}">Posts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url 'review:follow_user' %}">Abonnements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'authentication:logout' %}">Se Déconnecter</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'review:user_profile' username=user.username %}">
+                            <i class="fas fa-user"></i> <!-- Utilisation de l'icône utilisateur de Font Awesome -->
+                        </a>
+                    </li>
+
+
+               
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% else %}
+    {% comment %}
+    Si l'utilisateur n'est pas authentifié, redirigez-le vers la page de connexion.
+    {% endcomment %}
+    <script>
+        window.location.href = "{% url 'authentication:login' %}";
+    </script>
+{% endif %}
+
+<div class="container ">
+    <div class="container m-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="border p-4">
+                    {% block content %}
+    
+                    {% endblock content %}
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.1/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
