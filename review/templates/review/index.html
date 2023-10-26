@@ -1,6 +1,39 @@
 {% extends 'base.html' %}
 
 {% block title%}
-<p>Home</p>
+<h1>Welcome {{ user.username }}</h1>
 {% endblock title%}
 
+{% block content %}
+  <div class="container">
+    
+
+    {% comment %} {% if current_user %}
+      {% if is_following %}
+        <a href="{% url 'unfollow_user' profile_user.user.id %}">Arrêter de suivre</a>
+      {% else %}
+        <a href="{% url 'follow_user' profile_user.user.id %}">Suivre</a>
+      {% endif %}
+    {% endif %} {% endcomment %}
+
+   
+
+    <h2>Billets de {{ user.username }}</h2>
+    <ul>
+      {% for ticket in user_tickets %}
+        <li>{{ ticket.title }}</li>
+      {% empty %}
+        <li>Aucun billet publié.</li>
+      {% endfor %}
+    </ul>
+
+    <h2>Critiques de {{ user.username }}</h2>
+    <ul>
+      {% for review in user_reviews %}
+        <li>{{ review.headline }}</li>
+      {% empty %}
+        <li>Aucune critique publiée.</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}

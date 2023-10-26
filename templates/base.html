@@ -13,23 +13,26 @@
     <body>
         <div class="sidebar">
             <h1>LITRevu</h1>
-        
+            <hr>
 
 
             {% if user.is_authenticated %}
-                <p>Salut, {{ user }} !</p>
-                {% if user.profile_photo %}
-                    <img class="avatar" src={{ user.profile_photo.url }}>
-                {% else %}
-                    <img class="avatar" src="{% static 'images/default_profile.png'%}">
-                {% endif %}
                 
-                <!-- <p><a href="{% url 'review:home' %}">Home</a></p>
-                <p><a href="{% url 'review:about' %}">About</a></p>
-                <p><a href="{% url 'review:contact' %}">Contact</a></p> -->
+                <img class="avatar rounded-circle" 
+                    src="{% static 'images/default_profile.png'%}" 
+                    style="width: 80px; height: 80px; 
+                            position: relative; 
+                            right: 10%;
+                            transform: translateX(-50%);">
+           
+                
+                {% comment %} <p><a href="{% url 'review:user_profile' username=request.user.username %}">Profile</a></p> {% endcomment %}
+                <p><a href="{% url 'review:user_profile' username=user.username %}">Profile</a></p>
+                <p><a href="{% url 'review:home' %}">Flux</a></p>
+                <p><a href="{% url 'review:follow_user' %}">Abonnements</a></p>
                 <p><a href="{% url 'review:new_ticket' %}">Créer Ticket</a></p>
                 <p><a href="{% url 'review:ticket_list' %}">Liste des tickets</a></p>
-                <p><a href="{% url 'review:new_ticket' %}">Faire un Critique</a></p>
+                <p><a href="{% url 'review:new_review' %}">Faire un Critique</a></p>
 
 
                 <p><a href="{% url 'authentication:logout' %}">Se déconnecter</a></p>

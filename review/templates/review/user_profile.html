@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title%}
+<p>Profile de {{ user.username }} </p>
+{% endblock title%}
+
+
+
+{% block content %}
+  <div class="container">
+    <p>Username : {{ user.username }}</p>
+    <p>First name : {{ user.first_name }}</p>
+    <p>Last name : {{ user.last_name }}</p>
+    <p>Email : {{ user.email }}</p>
+  
+    {% comment %} {% if current_user %}
+      {% if is_following %}
+        <a href="{% url 'unfollow_user' profile_user.user.id %}">Arrêter de suivre</a>
+      {% else %}
+        <a href="{% url 'follow_user' profile_user.user.id %}">Suivre</a>
+      {% endif %}
+    {% endif %} {% endcomment %}
+
+   
+
+{% endblock %}

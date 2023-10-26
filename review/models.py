@@ -20,8 +20,38 @@ class Review(models.Model):
     time_created = models.DateTimeField(auto_now_add=True)
 
 class UserFollows(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='following')
-    followed_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='followed_by')
+    # Your UserFollows model definition goes
+    user = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='following',
+    )
+    followed_user = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='followerd_by',
+    )
 
+    def __str__(self):
+       return f"{self.user.username} follows {self.followed_user.username}"
+    
     class Meta:
         unique_together = ('user', 'followed_user')
+        verbose_name = 'abonnement'
+        verbose_name_plural = 'abonnements'
+
+
+# class profile utilisateur
+# class Profile(models.Model):
+#     user = models.OneToOneField(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+#     bio = models.TextField(max_length=500, blank=True, null=True, default=None)
+#     image = models.ImageField(null=True, blank=True, upload_to='profiles', default='default.png')
+
+#     def __str__(self):
+#         return f"{self.user.username} profile"
+    
+#     class Meta:
+#         verbose_name = 'profile'
+#         verbose_name_plural = 'profiles'
+
+    

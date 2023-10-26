@@ -1,30 +1,24 @@
-{% extends 'base.html' %} 
-{% load crispy_forms_tags %}
-
-
-{% block title%}
+{% extends 'base.html' %} {% load crispy_forms_tags %} {% block title%}
 <p>Creer un Ticket</p>
-{% endblock title%}
-
-{% block content %}
-
+{% endblock title%} {% block content %}
 
 <div class="container mt-3" style="width: 95%; font-size: 14px">
-
-    <form method="POST" , class="card p-3 mt-5" autocomplete="off">
-        {% csrf_token %}
-         {{ form|crispy }} 
-         {% comment %} <div class="row">
-            <div class="col-6">{{ form.title|as_crispy_field  }}</div>
-        </div>
-        <div class="row">
-            <div class="col-9">{{ form.description|as_crispy_field }}</div>
-        </div> {% endcomment %}
-        <button type="submit" class="btn btn-outline-primary mt-3" style="width: 90px;">Submit</button>
-    </form>
-
+  <form
+    method="POST"
+    ,
+    class="card p-3 mt-5"
+    autocomplete="off"
+    enctype="multipart/form-data"
+  >
+    {% csrf_token %} {{ form|crispy }}
+    <button
+      type="submit"
+      class="btn btn-outline-primary mt-3"
+      style="width: 90px"
+    >
+      Submit
+    </button>
+  </form>
 </div>
 
 {% endblock content %}
-
-

@@ -1,10 +1,13 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.views import generic
+from django.contrib import messages
 
 from authentication import models
+from authentication.models import User
 from .models import Review, Ticket, UserFollows
-from .forms import TicketForm, ReviewForm, UserFollowsForm
+from .forms import TicketForm, ReviewForm, SubscribeForm
 
 
 # Create your views here.
@@ -59,4 +62,85 @@ def new_review(request):
     else:
         form = ReviewForm()
     return render(request, 'review/review_create.html', {'form': form})
+
+
+
+def user_profile(request, username):
+    # Récupérer l'utilisateur dont le profil est affiché
+    profile_user = get_object_or_404(User, username=username)
+
+    # Récupérer l'utilisateur connecté (si authentifié)
+    current_user = request.user if request.user.is_authenticated else None
+
+    context = {
+        'profile_user': profile_user,
+        'current_user': current_user,
+    }
+
+    return render(request, 'review/user_profile.html', context)
+
+
+def follow_user(request):
+    # Récupérer la liste des utilisateurs que vous suivez (following)
+    user_following = UserFollows.objects.filter(user=request.user)
+
+    # Récupérer la liste des utilisateurs qui vous suivent (followers)
+    user_followers = UserFollows.objects.filter(followed_user=request.user)
+
+    if request.method == 'POST':
+        form = SubscribeForm(request.POST)
+        if form.is_valid():
+            username_to_follow = form.cleaned_data['user_to_follow']
+
+            # Vérifier si l'utilisateur essaie de se suivre lui-même
+            if username_to_follow == request.user.username:
+                messages.error(request, "Vous ne pouvez pas vous suivre vous-même.")
+            else:
+                try:
+                    # Vérifier si l'utilisateur cible existe
+                    user_to_follow = User.objects.get(username=username_to_follow)
+                    is_following = UserFollows.objects.filter(user=request.user, followed_user=user_to_follow).exists()
+
+                    if is_following:
+                        messages.error(request, f"Vous suivez déjà {username_to_follow} !")
+                    else:
+                        # Créer une nouvelle relation de suivi
+                        follow = UserFollows(user=request.user, followed_user=user_to_follow)
+                        follow.save()
+                        messages.success(request, f"Vous suivez maintenant {username_to_follow} !")
+                except User.DoesNotExist:
+                    messages.error(request, f"Utilisateur {username_to_follow} n'existe pas.")
+
+    else:
+        form = SubscribeForm()
+
+    context = {
+        'form': form,
+        'user_following': user_following,
+        'user_followers': user_followers,
+    }
+    return render(request, 'review/follow_user.html', context)
+
+
+
+#@login_required
+def unfollow_user(request, user_id):
+    # Récupérer l'utilisateur que vous souhaitez ne plus suivre
+    user_to_unfollow = get_object_or_404(User, id=user_id)
+
+    # Vérifier si vous suivez déjà cet utilisateur
+    try:
+        follow = UserFollows.objects.get(user=request.user, followed_user=user_to_unfollow)
+        follow.delete()
+        messages.success(request, f"Vous ne suivez plus {user_to_unfollow.username} !")
+    except UserFollows.DoesNotExist:
+        messages.error(request, f"Vous ne suiviez pas {user_to_unfollow.username}.")
+
+    # rester sur la meme page
+    return redirect(request.META.get('HTTP_REFERER', 'redirect_if_referer_not_found'))
+
+    
+
+
+
 

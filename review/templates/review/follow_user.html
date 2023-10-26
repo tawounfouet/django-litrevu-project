@@ -1,0 +1,92 @@
+{% extends 'base.html' %} 
+{% load crispy_forms_tags %} 
+
+{% block title%}
+<p>Gestion des abonnements</p>
+{% endblock title%} 
+
+{% block content %}
+<div class="container">
+  <h1>Suivre un utilisateur</h1>
+  <hr />
+  <form method="post">
+    {% csrf_token %} 
+    {{ form|crispy }}
+    <button type="submit">Suivre</button>
+
+    {% if form.errors %}
+    <div class="alert alert-danger">
+      {{ form.non_field_errors }}
+      {{ form.user_to_follow.errors }}
+    </div>
+    {% endif %}
+
+        <!-- Message from Backend -->
+        {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+ 
+  </form>
+
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    {{ form.non_field_errors }} {{ form.user_to_follow.errors }}
+  </div>
+  {% endif %}
+
+
+
+ 
+  <br />
+
+
+
+  <ul>
+    {% for follow in user_following %}
+        <li>
+            {{ follow.followed_user.username }}
+            <a href="{% url 'review:unfollow_user' user_id=follow.followed_user.id %}" class="btn btn-sm btn-danger mb-2">Désabonner</a>
+            </br>
+
+
+        </li>
+        {% empty %}
+        <li>Vous ne suivez personne pour le moment.</li>
+    {% endfor %}
+</ul>
+
+
+    <h2>Utilisateurs qui vous suivent</h2>
+    <ul>
+      {% for follow in user_followers %}
+        <li>{{ follow.user.username }}</li>
+      {% empty %}
+        <li>Personne ne vous suit pour le moment.</li>
+      {% endfor %}
+    </ul>
+</div>
+
+
+
+<script>
+    // Cette fonction masque les messages après un certain délai
+    function hideMessages() {
+      setTimeout(function() {
+        var messages = document.querySelectorAll('.alert');
+        messages.forEach(function(message) {
+          message.style.display = 'none';
+        });
+      }, 1000); // Messages disparaissent après 3 secondes (3000 millisecondes)
+    }
+  
+    // Appelez la fonction une fois que la page est chargée
+    window.onload = hideMessages;
+  </script>
+{% endblock %}
+
+
+

@@ -1,0 +1,23 @@
+{% extends 'base.html' %} 
+
+{% block title%}
+<p>Profile </p>
+{% endblock title%}
+
+{% block content %}
+  <h1>Profil de {{ user.username }}</h1>
+  <p>Nom d'utilisateur: {{ user.username }}</p>
+    <p>Prénom: {{ user.first_name }}</p>
+    <p>Nom: {{ user.last_name }}</p>
+    <p>Email: {{ user.email }}</p>
+    <p>Abonnés: {{ user.subscribers.count }}</p>
+
+    {% if is_subscribed %}
+    <p>Utilisateur abonné</p>
+  {% else %}
+    <p>Utilisateur non abonné</p>
+  {% endif %}
+
+  
+</div>
+{% endblock content %}
