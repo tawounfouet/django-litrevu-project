@@ -145,7 +145,11 @@ def follow_user(request):
     return render(request, 'review/follow_user.html', context)
 
 
-
+# Faire un un formulaire plutot : ne jamais faire en get les choses qui vont modifier la BD
+# C'est bien de demander une confirmation avant la suppression 
+# classe de suppression DeleteView --> Voir doc
+# ou bien utiliser une petite boite de dialogue en JS pour confirmer la suppremier
+# vérifier également dans la suppression que l'on soit l'auteur de l'abonnement
 #@login_required
 def unfollow_user(request, user_id):
     # Récupérer l'utilisateur que vous souhaitez ne plus suivre

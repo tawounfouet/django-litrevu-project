@@ -6,13 +6,34 @@ class TicketForm(forms.ModelForm):
     class Meta:
         model = Ticket 
         fields = "__all__"
+        
+
 
 
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
-        #fields = ['rating', 'headline', 'body', 'ticket', 'user', 'time_created']
-        fields = '__all__'
+        fields = ['rating', 'headline', 'body', 'ticket']
+        #fields = '__all__'
+        # utiliser un widget option button pour changer le rendu
+        RATING_CHOICES = (
+        (1, '1'),
+        (2, '2'),
+        (3, '3'),
+        (4, '4'),
+        (5, '5'),
+    )
+    #     rating = forms.ChoiceField(choices=RATING_CHOICES, widget=forms.RadioSelect)
+    def __init__(self, *args, **kwargs):
+        super(ReviewForm, self).__init__(*args, **kwargs)
+        # Use a radio select widget instead of a dropdown for the score.
+        self.fields["rating"] = forms.TypedChoiceField(
+            choices=ReviewForm.RATING_CHOICES,
+            coerce=int,
+            empty_value=0,
+            widget=forms.RadioSelect(),
+        ) 
+       
 
 
 class UserFollowsForm(forms.ModelForm):
