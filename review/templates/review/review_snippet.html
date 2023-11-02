@@ -1,0 +1,6 @@
+<div class="review-snippet">
+  <h3>{{ review.title }}</h3>
+  <p>{{ review.content }}</p>
+  <p>Note : {{ review.rating }}</p>
+  <a href="{% url 'review_detail' review.pk %}">Voir l'avis</a>
+</div>

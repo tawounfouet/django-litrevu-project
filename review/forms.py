@@ -5,34 +5,29 @@ from .models import Review, Ticket, UserFollows
 class TicketForm(forms.ModelForm):
     class Meta:
         model = Ticket 
-        fields = "__all__"
+        #fields = "__all__"
+        fields = ['title', 'description', 'image']
         
 
+# class ReviewForm(forms.ModelForm):
+    
+    
+#     class Meta:
+#         model = Review
+#         fields = '__all__'
+#         #fields = ['rating']
+        #rating = forms.ChoiceField(widget=forms.RadioSelect, choices=RATING_CHOICES)
+        
 
-
-class ReviewForm(forms.ModelForm):
-    class Meta:
-        model = Review
-        fields = ['rating', 'headline', 'body', 'ticket']
-        #fields = '__all__'
-        # utiliser un widget option button pour changer le rendu
-        RATING_CHOICES = (
-        (1, '1'),
-        (2, '2'),
-        (3, '3'),
-        (4, '4'),
-        (5, '5'),
-    )
-    #     rating = forms.ChoiceField(choices=RATING_CHOICES, widget=forms.RadioSelect)
-    def __init__(self, *args, **kwargs):
-        super(ReviewForm, self).__init__(*args, **kwargs)
-        # Use a radio select widget instead of a dropdown for the score.
-        self.fields["rating"] = forms.TypedChoiceField(
-            choices=ReviewForm.RATING_CHOICES,
-            coerce=int,
-            empty_value=0,
-            widget=forms.RadioSelect(),
-        ) 
+    # def __init__(self, *args, **kwargs):
+    #     super(ReviewForm, self).__init__(*args, **kwargs)
+    #     # Use a radio select widget instead of a dropdown for the score.
+    #     self.fields["rating"] = forms.TypedChoiceField(
+    #         choices=ReviewForm.RATING_CHOICES,
+    #         coerce=int,
+    #         empty_value=0,
+    #         widget=forms.RadioSelect(),
+    #     ) 
        
 
 
@@ -69,3 +64,35 @@ class SubscribeForm(forms.Form):
     #     self.helper.form_id = 'subscribe-form'
     #     self.helper.form_method = 'post'
     #     self.helper.add_input(Submit('submit', 'Suivre'))
+
+
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Field
+from crispy_forms.bootstrap import InlineRadios
+
+class ReviewForm(forms.ModelForm):
+    headline = forms.CharField(label="Title", max_length=128, widget=forms.TextInput())
+    body = forms.CharField(label="Commentaire",max_length=8192, widget=forms.Textarea(),required=False)
+    rating = forms.ChoiceField(initial=1, label="Rating",
+                               # passer une classe dans l'attribut forms.RadioSelect(attrs=)  
+                               widget=forms.RadioSelect(),
+                            choices=((0, "- 0"), (1, "- 1"), (2, "- 2"), (3, "- 3"), (4, "- 4"), (5, '- 5')))
+
+    class Meta:
+        model = Review
+        fields = ['headline', 'body', 'rating']
+
+    
+
+    # Crispy forms layout helper
+    helper = FormHelper()
+    helper.form_class = 'form-group'
+    helper.layout = Layout(
+        Field('headline'),
+        InlineRadios('rating', style="display: flex-inline; justify-content: space-around;"),
+        Field('body', rows="10"),
+        # Afficher l'image et pas le chemin vers l'image
+        #Field('image', accept="image/*"),
+        
+    )
+

@@ -34,7 +34,14 @@
                 <p><a href="{% url 'review:home' %}">Flux</a></p>
                 <p><a href="{% url 'review:new_ticket' %}">Créer Ticket</a></p>
                 <p><a href="{% url 'review:ticket_list' %}">Liste des tickets</a></p>
-                <p><a href="{% url 'review:new_review' %}">Faire un Critique</a></p>
+                <p><a href="{% url 'review:new_review_blank' %}">Faire une Review</a></p> 
+                <p><a href="{% url 'review:review_list' %}">Liste des Reviews</a></p>
+
+               
+
+                {% comment %} <p><a href="{% url 'review:new_review' ticket_id=ticket.id %}">Faire une Review</a></p> {% endcomment %}
+                
+             
 
 
                 <p><a href="{% url 'authentication:logout' %}">Se déconnecter</a></p>

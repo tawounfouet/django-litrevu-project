@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>{{ review.title }}</h1>
+
+  <p>{{ review.content }}</p>
+
+  <p>Note : {{ review.rating }}</p>
+
+{% if review.ticket %}
+  <p>Ticket lié : <a href="{% url 'review:ticket_detail' review.ticket.pk %}">{{ review.ticket.title }}</a></p>
+{% endif %}
+
+{% comment %} {% if user.is_authenticated %}
+  <a href="{% url 'review:review_update' review.pk %}">Modifier l'avis</a>
+  <a href="{% url 'review:review_delete' review.pk %}">Supprimer l'avis</a>
+{% endif %} {% endcomment %}
+{% endblock %}

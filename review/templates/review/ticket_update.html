@@ -1,5 +1,11 @@
-{% extends 'base2.html' %} 
+{% extends 'base.html' %} {% load crispy_forms_tags %} {% block title%}
+<h4 class="text-center">Update Ticket </h4>
+{% endblock title%} 
 
-{% block title%}
-<p>Update Ticket</p>
-{% endblock title%}
+{% block content %}
+<form method="POST", autocomplete="off" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input type="submit" value="Update">
+</form>
+{% endblock %}

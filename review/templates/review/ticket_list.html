@@ -8,11 +8,23 @@
 
 <div class="container m-5">
 {% if tickets %}
-    <ul>
+    
     {% for ticket in tickets %}
-        <li><a href="{% url 'review:ticket_detail' ticket.id %}">{{ ticket.title }}</a></li>
+    <div class="mb-5">
+        <p><a href="{% url 'review:ticket_detail' ticket.id %}">{{ ticket.title }}</a></p>
+        <p> {{ ticket.description }}</p>
+        <!-- show ticket image if exist -->
+        {% if ticket.image %}
+            <img src="{{ ticket.image.url }}" alt="Ticket Image" width="100" height="100">
+        {% endif %}
+        <div class="mt-2">
+            <a class="btn btn-outline-secondary" href="{% url 'review:ticket_update' ticket.id %}">Modifier</a>
+            <a class="btn btn-outline-danger" href="{% url 'review:ticket_delete' ticket.id %}">Supprimer</a>                       
+        </div>  
+    </div>
+        
     {% endfor %}
-    </ul>
+    
 {% else %}
     <p>No tickets are available.</p>
 {% endif %}

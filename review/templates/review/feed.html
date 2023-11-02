@@ -1,0 +1,18 @@
+{% extends 'base.html' %} {% load crispy_forms_tags %} {% block title%}
+<h4 class="text-center">Feeds </h4>
+{% endblock title%} 
+
+
+{% block content %}
+<p>All Feeds</p>
+
+{% for post in posts %}
+    {% if post.content_type == 'TICKET' %}
+        {% include 'ticket_snippet.html' %}
+    {% elif post.content_type == 'REVIEW' %}
+        {% include 'review_snippet.html' %}
+    {% endif %}
+    
+{% endfor %}
+
+{% endblock content %}

@@ -10,7 +10,17 @@
     autocomplete="off"
     enctype="multipart/form-data"
   >
-    {% csrf_token %} {{ form|crispy }}
+    {% csrf_token %} 
+    <hr>
+    <h4>Livre/Article</h4>
+    {{ ticket_form|crispy }}
+
+    <hr>
+    <h4>Critique</h4>
+    
+    {{ review_form|crispy }} 
+
+
     <button
       type="submit"
       class="btn btn-outline-primary mt-3"
