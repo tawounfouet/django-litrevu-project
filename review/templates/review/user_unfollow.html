@@ -1,0 +1,14 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+  <h2>Unfollow {{ user_to_unfollow.username }}</h2>
+  <p>Are you sure you want to unfollow {{ user_to_unfollow.username }}?</p>
+
+  <form method="post" action="{% url 'review:user_unfollow' user_id=user_to_unfollow.id %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Unfollow</button>
+  </form>
+  
+  <p><a href="{% url 'review:follower_user' %}">Back to Followers</a></p>
+{% endblock %}

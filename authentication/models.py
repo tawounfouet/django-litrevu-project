@@ -10,5 +10,12 @@ class User(AbstractUser):
     # follows = models.ManyToManyField("self", symmetrical=True, verbose_name="suit")
     # subscribers = models.ManyToManyField("self", symmetrical=False, verbose_name="abonnés", blank=True)
 
+    def __str__(self):
+        return self.username
+    
+    # def get_user_model(self):
+    #     return self.username
+    
+
 
 

@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse, get_object_or_404, redirect
+from django.shortcuts import render, HttpResponse, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.views import generic
@@ -8,10 +8,16 @@ from django.views.generic.edit import CreateView
 from authentication import models
 from authentication.models import User
 from .models import Review, Ticket, UserFollows
-from .forms import TicketForm, ReviewForm, SubscribeForm
+from .forms import TicketForm, TicketDeleteForm, ReviewForm, SubscribeForm, UserUnfollowForm
 
 
-# Create your views here.
+from django.db.models import Count, Value, CharField, OuterRef, Subquery
+
+from itertools import chain
+from django.db.models import CharField, Value
+from django.shortcuts import render
+
+
 def home(request):
     # recupérer le user connecté dans une variable
     user = request.user 
@@ -28,56 +34,62 @@ def contact(request):
     return render(request, 'review/contact.html')
 
 
-# def new_ticket(request):
-#     if request.method == 'POST':
-#         form = TicketForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             form.save()
-#             return HttpResponse("Ticket created successfully")
-#     else:
-#         form = TicketForm()
-#     return render(request, 'review/ticket_create.html', {'form': form})
 
-from itertools import chain
-from django.db.models import CharField, Value
-from django.shortcuts import render
 
-@login_required
-def get_users_viewable_reviews(user):
-    """Renvoie un ensemble de requêtes des billets et avis de tous les utilisateurs suivis par l'utilisateur connecté."""
-    # Obtenir tous les utilisateurs suivis par l'utilisateur connecté.
-    followed_users = UserFollows.objects.filter(user=user)
-    # Obtenir tous les billets et avis des utilisateurs suivis.
-    reviews = Review.objects.filter(user__in=followed_users)
-    
-    return reviews
+def get_users_viewable_reviews(request):
+    """Return a queryset of reviews that the user can view."""
+    users_followed = UserFollows.objects.filter(user_id=request.user.id).values(
+        "followed_user_id"
+    )
+    reviews_to_my_tickets = Review.objects.filter(ticket__user_id=request.user.id)
+    list_id = [id["followed_user_id"] for id in users_followed]
+    list_id.append(request.user.id)
+    users_objects = User.objects.filter(id__in=list_id)
+    reviews_users_followed = Review.objects.filter(user__in=users_objects)
+    reviews_users_followed = reviews_users_followed | reviews_to_my_tickets
+    return reviews_users_followed
 
-@login_required
-def get_users_viewable_tickets(user):
-    """Renvoie un ensemble de requêtes des billets et avis de l'utilisateur connecté."""
-    # Obtenir tous les billets et avis de l'utilisateur connecté.
-    tickets = Ticket.objects.filter(user=user)
 
-    return tickets
+def get_users_viewable_tickets(request):
+    """Return a queryset of a tickets that the user can view"""
+    users_followed = UserFollows.objects.filter(user_id=request.user.id).values(
+        "followed_user_id"
+    )
+    list_id = [id["followed_user_id"] for id in users_followed]
+    list_id.append(request.user.id)
+    users_objects = User.objects.filter(id__in=list_id)
+    tickets_users_followed = Ticket.objects.filter(user__in=users_objects)
+    return tickets_users_followed
+
+
 
 
 @login_required
 def feed(request):
-    reviews = get_users_viewable_reviews(request.user)
-    # returns queryset of reviews
+    # Récupérez les critiques visibles par l'utilisateur
+    reviews = get_users_viewable_reviews(request)
+
+    # Comptez le nombre de critiques par ticket
+    ticket_reviews_count = Review.objects.filter(ticket_id=OuterRef('pk')).values('ticket_id').annotate(
+        num_reviews=Count('id')
+    ).values('num_reviews')
+
+    # Récupérez les tickets visibles par l'utilisateur avec le nombre de critiques associées
+    tickets = get_users_viewable_tickets(request).annotate(
+        num_reviews=Subquery(ticket_reviews_count, output_field=CharField())
+    )
+
+    # Ajoutez une annotation pour différencier les critiques et les tickets
     reviews = reviews.annotate(content_type=Value('REVIEW', CharField()))
-    tickets = get_users_viewable_tickets(request.user)
-    # returns queryset of tickets
-    tickets = tickets.annotate(content_type=Value('TICKET', CharField()))
-    # combine and sort the two types of posts
+    tickets = tickets.annotate(content_type=Value('TICKET', CharField()), 
+                               review_number=Count('review'))
+
+    # Combiner et trier les deux types de publications
     posts = sorted(chain(reviews, tickets),
                    key=lambda post: post.time_created,
                    reverse=True)
-    
+
     return render(request, 'review/feed.html', context={'posts': posts})
-
-
-
 
 
 
@@ -101,6 +113,7 @@ class TicketListView(generic.ListView):
     context_object_name = 'tickets'
     paginate_by = 5
     queryset = Ticket.objects.all().order_by('-time_created')
+   # modifier la queryset pour afficher ticket et review
 
 # ticket detail view
 class TicketDetailView(generic.DetailView):
@@ -108,30 +121,77 @@ class TicketDetailView(generic.DetailView):
     template_name = 'review/ticket_detail.html'
     context_object_name = 'ticket'
 
-# Supprimer un ticket
-class TicketDeleteView(generic.DeleteView):
-    model = Ticket
-    template_name = 'review/ticket_delete.html'
-    success_url = reverse_lazy('review:ticket_list')
 
-    def get(self, request, *args, **kwargs):
-        return self.post(request, *args, **kwargs)
+def delete_ticket(request, ticket_id):
+    """Supprimer un ticket"""
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+
+    # Vérifier si l'utilisateur connecté est l'auteur du ticket
+    if request.user != ticket.user:
+        # Si non, rediriger l'utilisateur vers la liste des tickets (ou autre page appropriée)
+        return HttpResponseRedirect(reverse('review:ticket_list'))
+
+    if request.method == 'POST':
+        form = TicketDeleteForm(request.POST, instance=ticket)
+        if form.is_valid():
+            # Faire pareil pour la suppression // vérification
+            ticket.delete()
+            return redirect('review:ticket_list')
+    else:
+        form = TicketDeleteForm(instance=ticket)
+
+    return render(request, 'review/ticket_delete.html', {'form': form, 'ticket': ticket})
 
 
-# utiliser un formulaire en post pour la delete view
 
 
- # ticket edit view
+from django.http import HttpResponseRedirect
 class TicketUpdateView(generic.UpdateView):
     model = Ticket
     template_name = 'review/ticket_update.html'
     fields = ['title', 'description', 'image']
     success_url = reverse_lazy('review:ticket_list')
 
+    def dispatch(self, request, *args, **kwargs):
+        ticket = self.get_object()
+        
+        # Vérifier si l'utilisateur connecté est l'auteur du ticket
+        if request.user != ticket.user:
+            # Si non, rediriger l'utilisateur vers la liste des tickets (ou autre page appropriée)
+            return HttpResponseRedirect(reverse('review:ticket_list'))
+        
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         form.instance.user = self.request.user  # Récupérer l'utilisateur connecté
+        # Faire pareil pour la suppression
         return super().form_valid(form)
 
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import generic
+from .models import Ticket, Review
+
+class TicketReviewListView(LoginRequiredMixin, generic.ListView):
+    template_name = 'review/ticket_review_list.html'
+    context_object_name = 'items'
+    paginate_by = 5
+
+    def get_queryset(self):
+        # Récupérez l'utilisateur connecté
+        user = self.request.user
+
+        # Récupérez les tickets et reviews de l'utilisateur connecté
+        tickets = Ticket.objects.filter(user=user).order_by('-time_created')
+        reviews = Review.objects.filter(user=user).order_by('-time_created')
+
+        # Combinez les listes de tickets et de reviews
+        items = list(tickets) + list(reviews)
+
+        # Triez la liste combinée par time_created
+        items.sort(key=lambda x: x.time_created, reverse=True)
+
+        return items
 
 
 # 
@@ -153,18 +213,43 @@ def new_review_blank(request):
             review.save()
 
 
-            return HttpResponse("Ticket and Review created successfully")
+            #return HttpResponse("Ticket and Review created successfully")
+            return redirect('review:ticket_detail', ticket_id=ticket.id)
     else:
         ticket_form = TicketForm()
         review_form = ReviewForm()
 
-    return render(request, 'review/review_create.html', {'ticket_form': ticket_form, 'review_form': review_form})
+    return render(request, 'review/review_create_blank.html', {'ticket_form': ticket_form, 'review_form': review_form})
 
 
-
-
-# A faire 
-# def new_review(request):
+def new_review(request, ticket_id):
+    """Create a new review."""
+    ticket_instance = Ticket.objects.get(id=ticket_id)
+    user = request.user
+    if request.method == "POST":
+        form_review = ReviewForm(request.POST)
+        if form_review.is_valid():
+            form_review.cleaned_data
+            review_instance = Review(
+                ticket=ticket_instance,
+                rating=form_review.cleaned_data["rating"],
+                headline=form_review.cleaned_data["headline"],
+                body=form_review.cleaned_data["body"],
+                user=user,
+            )
+            review_instance.save()
+            ticket_instance.has_review = True
+            ticket_instance.save()
+            return redirect("review:feed")
+    else:
+        ticket_instance = Ticket.objects.get(id=ticket_id)
+        review_form = ReviewForm()
+        review_form.ticket = ticket_instance
+        return render(
+            request,
+            'review/review_create.html',
+            {"ticket_instance": ticket_instance, "review_form": review_form},
+        )
 
 
 # Liste des reviews
@@ -175,10 +260,7 @@ class ReviewListView(generic.ListView):
     paginate_by = 5
     queryset = Review.objects.all().order_by('-time_created')
 
-# url for review list
-# path('reviews', views.ReviewListView.as_view(), name='review_list'),
-# url for review in template
-# {% url 'review:review_list' %}
+
 
 class ReviewDetailView(generic.DetailView):
     model = Review
@@ -189,44 +271,6 @@ class ReviewDetailView(generic.DetailView):
         context['review'] = self.object
 
         return context
-
-
-# def new_review_blank(request):
-#     if request.method == 'POST':
-#         form = ReviewForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             form.save()
-#             return HttpResponse("Review created successfully")
-#     else:
-#         form = ReviewForm()
-#     return render(request, 'review/review_create.html', {'form': form})
-
-
-# Use ReviewForm to create and fonction based view to create a review
-def new_review(request, ticket_id):
-    # Récupérer le ticket dont l'ID est ticket_id
-    ticket = get_object_or_404(Ticket, id=ticket_id)
-
-    #return HttpResponse(f"Ticket: {ticket.title} | {ticket.description} | {ticket.image}")
-
-
-    if request.method == 'POST':
-        form = ReviewForm(request.POST, request.FILES)
-        if form.is_valid():
-            # Créer un objet Review à partir du formulaire mais ne pas le sauvegarder tout de suite
-            review = form.save(commit=False)
-            # Récupérer l'utilisateur connecté et l'associer à la review
-            review.user = request.user
-            # Récupérer le ticket et l'associer à la review
-            review.ticket = ticket
-            # Sauvegarder la review
-            review.save()
-            return redirect('review:ticket_detail', ticket_id=ticket_id)
-    else:
-        form = ReviewForm()
-    return render(request, 'review/review_create.html', {'form': form, 'ticket': ticket})
-
-
 
 
 
@@ -285,31 +329,38 @@ def follow_user(request):
         'user_following': user_following,
         'user_followers': user_followers,
     }
-    return render(request, 'review/follow_user.html', context)
+    return render(request, 'review/user_follow.html', context)
 
 
-# Faire un un formulaire plutot : ne jamais faire en get les choses qui vont modifier la BD
-# C'est bien de demander une confirmation avant la suppression 
-# classe de suppression DeleteView --> Voir doc
-# ou bien utiliser une petite boite de dialogue en JS pour confirmer la suppremier
-# vérifier également dans la suppression que l'on soit l'auteur de l'abonnement
-#@login_required
-def unfollow_user(request, user_id):
-    # Récupérer l'utilisateur que vous souhaitez ne plus suivre
-    user_to_unfollow = get_object_or_404(User, id=user_id)
 
-    # Vérifier si vous suivez déjà cet utilisateur
-    try:
-        follow = UserFollows.objects.get(user=request.user, followed_user=user_to_unfollow)
-        follow.delete()
-        messages.success(request, f"Vous ne suivez plus {user_to_unfollow.username} !")
-    except UserFollows.DoesNotExist:
-        messages.error(request, f"Vous ne suiviez pas {user_to_unfollow.username}.")
+from django.views.generic import DeleteView
+from django.http import Http404,  HttpResponseForbidden
 
-    # rester sur la meme page
-    return redirect(request.META.get('HTTP_REFERER', 'redirect_if_referer_not_found'))
 
-    
+from django.views import View
+class UserUnfollowView(View):
+    template_name = 'review/user_unfollow.html'
+
+
+    def post(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('user_id')  # Utilisez 'user_id' car c'est le nom que vous avez utilisé dans votre URL
+        user_to_unfollow = get_object_or_404(User, id=user_id)
+
+        form = UserUnfollowForm(request.POST)
+
+        if form.is_valid():
+            # Supprimer la relation de suivi
+            UserFollows.objects.filter(follower=request.user, following=user_to_unfollow).delete()
+            return redirect('review:follower_user')  # Ajoutez l'URL appropriée
+
+        context = {
+            'user_to_unfollow': user_to_unfollow,
+            'form': form,
+        }
+
+        return render(request, self.template_name, context)
+
+
 
 
 

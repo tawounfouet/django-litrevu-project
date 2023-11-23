@@ -1,0 +1,60 @@
+{% extends 'base2.html' %} 
+{% load custom_filters %}
+
+{% block title%}
+<p>Liste des Tickets et Reviews</p>
+{% endblock title%}
+
+
+{% block content %}
+
+  {% if items %}
+    {% for item in items %}
+    {% if item|isinstanceof:"review.models.Ticket" %}
+        <div class="mb-5">
+          <p><a href="{% url 'review:ticket_detail' item.id %}">{{ item.title }}</a></p>
+          <p>{{ item.description }}</p>
+          {% if item.image %}
+            <img src="{{ item.image.url }}" alt="Ticket Image" width="100" height="100">
+          {% endif %}
+          {% if user.is_authenticated and user == item.user %}
+          <div class="mt-2">
+              <a class="btn btn-outline-secondary" href="{% url 'review:ticket_update' item.id %}">Modifier</a>
+              <a class="btn btn-outline-danger" href="{% url 'review:ticket_delete' item.id %}">Supprimer</a>                       
+          </div>
+          {% endif %} 
+        </div>
+    {% elif item|isinstanceof:"review.models.Review" %}
+        <div class="mb-5">
+          
+          <p>{{ item.headline }}</a></p>
+          <img src="{{ item.ticket.image.url }}" alt="Ticket Image for the post" width="100" height="100">
+          <p>{{ item.body }}</a></p>
+          <p>{{ item.comment }}</p>
+          
+        </div>
+      {% endif %}
+      
+    {% endfor %}
+
+    <div class="pagination">
+      <span class="step-links">
+        {% if items.has_previous %}
+          <a href="?page=1">&laquo; first</a>
+          <a href="?page={{ items.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+          Page {{ items.number }} of {{ items.paginator.num_pages }}.
+        </span>
+
+        {% if items.has_next %}
+          <a href="?page={{ items.next_page_number }}">next</a>
+          <a href="?page={{ items.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+      </span>
+    </div>
+  {% else %}
+    <p>Aucun ticket ni review disponible.</p>
+  {% endif %}
+{% endblock %}

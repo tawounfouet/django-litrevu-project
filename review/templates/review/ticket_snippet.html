@@ -1,8 +1,47 @@
+{% load static %}
 
+{% if post.user_id == request.user.id %}
 
-<div class="ticket-snippet">
-    <h3>{{ ticket.title }}</h3>
-    <p>{{ ticket.content }}</p>
-    <a href="{% url 'ticket_detail' ticket.pk %}">Voir le billet</a>
+<div class="row mb-0 ">
+    <div class="col-6">
+        <div class='ticket_user'>
+            <span>Vous avez demandé une critique</span>
+        </div>
+        {% else %}
+        <div class='ticket_user'>
+            <span>{{ post.user }} a demandé une critique</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-6">
+        <div class='ticket_time_created'>
+            <p>{{ post.time_created }}</p>
+        </div>
+    </div>
 </div>
-  
+
+<div class='ticket_title'>
+    <h3>{{ post.title }}</h3>
+    <p>{{ post.description }}</p>
+
+    {% if post.image %}
+        <img src="{{ post.image.url }}" alt="Ticket {{ post.title }}" width="100" height="100">  
+    {% else %}
+    <img src="{% static 'images/review.jpg' %}" alt="image par defaut", width="100" height="100">
+</div>
+
+{% endif %}
+
+
+
+
+{% if not post.review_set.exists %}
+    <div class="mt-2">
+        <a class="btn btn-outline-primary" href="{% url 'review:new_review' post.id %}">Créer une critique</a>
+    </div>
+{% else %}
+
+{% endif %}
+
+<hr>

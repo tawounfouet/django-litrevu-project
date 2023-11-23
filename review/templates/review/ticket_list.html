@@ -17,10 +17,13 @@
         {% if ticket.image %}
             <img src="{{ ticket.image.url }}" alt="Ticket Image" width="100" height="100">
         {% endif %}
+
+        {% if user.is_authenticated and user == ticket.user %}
         <div class="mt-2">
             <a class="btn btn-outline-secondary" href="{% url 'review:ticket_update' ticket.id %}">Modifier</a>
             <a class="btn btn-outline-danger" href="{% url 'review:ticket_delete' ticket.id %}">Supprimer</a>                       
-        </div>  
+        </div>
+        {% endif %} 
     </div>
         
     {% endfor %}

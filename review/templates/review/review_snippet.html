@@ -1,6 +1,51 @@
-<div class="review-snippet">
-  <h3>{{ review.title }}</h3>
-  <p>{{ review.content }}</p>
-  <p>Note : {{ review.rating }}</p>
-  <a href="{% url 'review_detail' review.pk %}">Voir l'avis</a>
+{% load static %}
+
+<div class="row mb-0 ">
+  <div class="col-6">
+    {% if post.user_id == request.user.id %}
+      <span>Vous avez publié une critique</span>
+    {% else %}
+      <span>{{ post.user }} a posté une critique</span>
+    {% endif %}
+  </div>
+  <div class="col-6">
+    {{ post.time_created }}
+  </div>
+</div>
+
+<div class='review.headline'>
+    <h3>{{ post.headline }} - 
+    {% if post.rating == 1 %}
+    &#9733</h3>
+</div>
+    {% elif post.rating == 2 %}
+    &#9733&#9733</h3>
+</div>
+    {% elif post.rating == 3 %}
+    &#9733&#9733&#9733</h3>
+</div>
+    {% elif post.rating == 4 %}
+    &#9733&#9733&#9733&#9733</h3>
+</div>
+    {% elif post.rating == 5 %}
+    &#9733&#9733&#9733&#9733&#9733</h3>
+</div>
+    {% endif %}
+
+<div class='review_body'>
+    {{ post.body|truncatechars:200 }}
+</div>
+<div class='ticket_related'>
+    <h5>Ticket - {{ post.user }}</h5>
+    {{ post.ticket }}
+    {% if post.ticket.image %}
+    <div class='image_ticket_related'>
+        <img src="{{ post.ticket.image.url }}" alt="Ticket Image for the post" width="100" height="100">
+    </div>
+    {% else %}
+    <div class='image_ticket_related'>
+        <img src="{% static 'images/review.jpg' %}" alt="image par defaut", width="100" height="100">
+    </div>
+    {% endif %}
+    <hr>
 </div>

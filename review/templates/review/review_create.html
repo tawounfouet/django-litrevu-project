@@ -1,8 +1,27 @@
-{% extends 'base.html' %} {% load crispy_forms_tags %} {% block title%}
+
+{% extends 'base2.html' %} {% load crispy_forms_tags %} {% block title%}
 <h4 class="text-center">Faire une Critique </h4>
 {% endblock title%} {% block content %}
 
 <div class="container mt-3" style="width: 95%; font-size: 14px">
+
+    <div >
+        <h5>Vous êtes en train de poster en réponse à {{ ticket_instance.title }} </h5>
+        <p> publié par {{ ticket_instance.user }} le {{ ticket_instance.time_created }} </p>
+    </div>
+
+    <div>
+        <div id="ticket_instance">
+            {% if ticket_instance.image %}
+                <div class='ticket_image'>
+                    <img src="{{ ticket_instance.image.url }}" alt="{{ ticket_instance.title }}" width="300" height="400">
+                </div>
+            {% endif %}          
+        </div>
+    </div>
+
+
+
   <form
     method="POST"
     ,
@@ -11,14 +30,12 @@
     enctype="multipart/form-data"
   >
     {% csrf_token %} 
-    <hr>
-    <h4>Livre/Article</h4>
-    {{ ticket_form|crispy }}
 
-    <hr>
-    <h4>Critique</h4>
-    
+     <h4>Critique</h4>
     {{ review_form|crispy }} 
+
+
+
 
 
     <button

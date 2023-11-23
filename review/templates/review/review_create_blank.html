@@ -1,0 +1,34 @@
+{% extends 'base2.html' %} {% load crispy_forms_tags %} {% block title%}
+<h4 class="text-center">Faire une Critique </h4>
+{% endblock title%} {% block content %}
+
+<div class="container mt-3" style="width: 95%; font-size: 14px">
+  <form
+    method="POST"
+    ,
+    class="card p-3 mt-5"
+    autocomplete="off"
+    enctype="multipart/form-data"
+  >
+    {% csrf_token %} 
+    <hr>
+    <h4>Livre/Article</h4>
+    {{ ticket_form|crispy }}
+
+    <hr>
+    <h4>Critique</h4>
+    
+    {{ review_form|crispy }} 
+
+
+    <button
+      type="submit"
+      class="btn btn-outline-primary mt-3"
+      style="width: 90px"
+    >
+      Submit
+    </button>
+  </form>
+</div>
+
+{% endblock content %}

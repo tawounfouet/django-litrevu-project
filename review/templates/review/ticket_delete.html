@@ -1,8 +1,11 @@
-{% extends 'base.html' %} 
+{% extends 'base2.html' %} 
+{% load crispy_forms_tags %}
 
 {% block title%}
 <p>Delete Ticket</p>
+{% endblock title%}
 
+{% block content %}
 <div class="content-section">
     <form method="POST">
       {% csrf_token %}
@@ -11,14 +14,23 @@
         <legend class="border-bottom mb-4">Delete Ticket</legend>
         <p>Are you sure you want to delete the ticket "{{ ticket.title }}"?</p>
       </fieldset>
+
       <div class="form-group">
-        <button class="btn btn-outline-danger" type="submit">Yes, Delete</button>
-        <a class="btn btn-outline-secondary" href="{% url 'review:ticket_list' %}">Cancel</a>
+          <form method="post" action='{{ action_url }}' enctype="multipart/form-data">
+              {% csrf_token %}
+              {{ form | crispy}}
+              <input class="btn btn-outline-danger"  type="submit" value="Supprimer">
+              <button class="btn btn-outline-secondary" type="button">
+                  <a href="{% url 'review:ticket_list' %}">Cancel</a>
+              </button>
+          </form>
+      </div>
+
       </div>
   
     </form>
   </div>
+{% endblock content %}
 
 
 
-{% endblock title%}

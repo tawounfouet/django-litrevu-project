@@ -1,16 +1,31 @@
-{% extends 'base.html' %} {% load crispy_forms_tags %} {% block title%}
+{% extends 'base2.html' %} {% load crispy_forms_tags %} {% block title%}
 <h4 class="text-center">Feeds </h4>
 {% endblock title%} 
 
 
 {% block content %}
-<p>All Feeds</p>
+<div class="row mb-5">
+    <div class="col-md-3">
+        <a class="btn btn-outline-secondary" href="{% url 'review:new_ticket' %}">Demander une critique</a>
+    </div>
+
+    <div class="col-md-9">
+        <a class="btn btn-outline-primary" href="{% url 'review:new_review_blank' %}">Créer un Ticket </a>
+    </div>                       
+</div>  
+
+
+
 
 {% for post in posts %}
     {% if post.content_type == 'TICKET' %}
-        {% include 'ticket_snippet.html' %}
+        {% include 'review/ticket_snippet.html' %}
+ 
+
     {% elif post.content_type == 'REVIEW' %}
-        {% include 'review_snippet.html' %}
+        {% include 'review/review_snippet.html' %}
+        
+
     {% endif %}
     
 {% endfor %}

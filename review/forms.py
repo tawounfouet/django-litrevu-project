@@ -37,14 +37,33 @@ class UserFollowsForm(forms.ModelForm):
         #fields = ['followed_user', 'user']
         fields = '__all__'
 
+# User unfollow form
+class UserUnfollowForm(forms.ModelForm):
+    class Meta:
+        model = UserFollows
+        fields = ['followed_user', 'user']
+        #fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(UserUnfollowForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_id = 'id-UserUnfollowForm'
+        self.helper.form_class = 'blueForms'
+        self.helper.form_method = 'post'
+        self.helper.form_action = 'unfollow_user'
+
+        self.helper.add_input(Submit('submit', 'Submit'))
+
+
 
 # forms.py
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 class SubscribeForm(forms.Form):
     user_to_follow = forms.CharField(
-        label="Suivre d'autres utilisateurs",
-        widget=forms.TextInput()
+        label="",
+        #label="Suivre d'autres utilisateurs",
+        widget=forms.TextInput(attrs={'placeholder': 'Nom d\'utilisateur'}),
     )
 
     def __init__(self, *args, **kwargs):
@@ -96,3 +115,20 @@ class ReviewForm(forms.ModelForm):
         
     )
 
+# Formulaire de suppression de ticket
+
+class TicketDeleteForm(forms.ModelForm):
+    class Meta:
+        model = Ticket
+        #fields = '__all__'
+        fields = ['title']
+
+    def __init__(self, *args, **kwargs):
+        super(TicketDeleteForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_id = 'id-TicketDeleteForm'
+        self.helper.form_class = 'blueForms'
+        self.helper.form_method = 'post'
+        self.helper.form_action = 'ticket_delete'
+
+        self.helper.add_input(Submit('submit', 'Submit'))
