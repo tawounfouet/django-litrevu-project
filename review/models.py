@@ -37,7 +37,7 @@ class UserFollows(models.Model):
     followed_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='followerd_by',
+        related_name='followed_by',
     )
 
     def __str__(self):
@@ -49,17 +49,4 @@ class UserFollows(models.Model):
         verbose_name_plural = 'abonnements'
 
 
-# class profile utilisateur
-# class Profile(models.Model):
-#     user = models.OneToOneField(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-#     bio = models.TextField(max_length=500, blank=True, null=True, default=None)
-#     image = models.ImageField(null=True, blank=True, upload_to='profiles', default='default.png')
 
-#     def __str__(self):
-#         return f"{self.user.username} profile"
-    
-#     class Meta:
-#         verbose_name = 'profile'
-#         verbose_name_plural = 'profiles'
-
-    

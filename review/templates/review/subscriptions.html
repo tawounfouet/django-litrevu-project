@@ -1,58 +1,114 @@
-{% extends "base2.html" %}
-{% load crispy_forms_tags %}
+{% extends 'base.html' %} 
+{% load crispy_forms_tags %} 
 
 {% block title%}
-<p>Gestion des Abonnements</p>
-{% endblock title%}
-
+<p>Gestion des abonnements</p>
+{% endblock title%} 
 
 {% block content %}
-<div class="container">
-  <!-- Section "Suivre d'autres utilisateurs" -->
 
-  <form method="POST" , class="card p-3 mt-5" autocomplete="off">
-    {% csrf_token %}
 
-    {{ form|crispy }} 
-    <button type="submit" class="btn btn-outline-primary mt-3" style="width: 90px;">Suivre</button>
-     <!-- Message from Backend -->
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-          {{ message }}
-        </div>
-      {% endfor %}
+<!-- Rajouter de la marge bootstrap : m-5 -->
+<div class="container m-4">
+  <h4>Suivre d'autres utilisateurs</h4>
+  <div class="row">
+    <div class="col-md-8"> 
+      <form method="post">
+        {% csrf_token %} 
+        {{ form|crispy }}
+      </div>
+     
+    <div class="col-md-4">
+      <button  class="btn btn-outline-primary" type="submit">Envoyer</button>
+      <!-- <a class="btn btn-outline-primary" href="#">Créer une critique </a> -->
+    </div>
+  </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger">
+      {{ form.non_field_errors }}
+      {{ form.user_to_follow.errors }}
+    </div>
     {% endif %}
+
+        <!-- Message from Backend -->
+        {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
   </form>
-</div>
-  <!-- Résultats de la recherche et bouton pour suivre l'utilisateur -->
-  <!-- Insérez ici le code pour afficher les résultats de la recherche -->
 
-  <!-- Section "Abonnements" -->
-<div class="container">
-  <hr>
-  <h2>Abonnements</h2>
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    {{ form.non_field_errors }} {{ form.user_to_follow.errors }}
+  </div>
+  {% endif %}
+</div>
+
+
+
+<div class="container m-5">
+  <h4>Utilisateurs que vous suivez</h4>
   <ul>
-    {% for subscription in user.follows.all %}
-      <li>
-        <span>{{ subscription.username }}</span>
-      </li>
-    {% endfor %}
+      {% for follow in user_following %}
+          <li class="mb-2">
+              <form method="post" action="{% url 'review:unfollow_user' %}" onsubmit="return confirmUnfollow(this)">
+                  {% csrf_token %}
+                  <input type="hidden" name="user_to_unfollow" value="{{ follow.followed_user.id }}">
+                  <span class="d-inline">{{ follow.followed_user.username }}</span>
+                  <button type="submit" class="btn btn-sm btn-danger d-inline" data-username="{{ follow.followed_user.username }}">
+                      Se désabonner
+                  </button>
+              </form>
+          </li>
+      {% empty %}
+          <li>Vous ne suivez personne pour le moment.</li>
+      {% endfor %}
   </ul>
 </div>
 
-  <!-- Section "Abonnés" -->
-<div class="container">
-  <hr>
-  <h2>Abonnés</h2>
-  <ul>
-    {% for follower in user.subscribers.all %}
-      <li>
-        <span>{{ follower.username }}</span>
-        <!-- Vous pouvez afficher d'autres informations sur les abonnés si nécessaire -->
-      </li>
-    {% endfor %}
-  </ul>
+
+<div class="container m-5">
+    <h4>Utilisateurs qui vous suivent</h4>
+    <ul>
+      {% for follow in user_followers %}
+        <li>{{ follow.user.username }}</li>
+      {% empty %}
+        <li>Personne ne vous suit pour le moment.</li>
+      {% endfor %}
+    </ul>
 </div>
 
-{% endblock content %}
+
+ 
+
+
+
+<script>
+    // Cette fonction masque les messages après un certain délai
+    function hideMessages() {
+      setTimeout(function() {
+        var messages = document.querySelectorAll('.alert');
+        messages.forEach(function(message) {
+          message.style.display = 'none';
+        });
+      }, 1000); // Messages disparaissent après 3 secondes (3000 millisecondes)
+    }
+  
+    // Appelez la fonction une fois que la page est chargée
+    window.onload = hideMessages;
+
+
+    // Cette fonction demande une confirmation avant de se désabonner
+    function confirmUnfollow(form) {
+      var username = form.querySelector('[data-username]').dataset.username;
+      return confirm("Êtes-vous sûr de vouloir vous désabonner de " + username + "?");
+  }
+  </script>
+{% endblock %}
+
+
+

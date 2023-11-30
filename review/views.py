@@ -1,37 +1,23 @@
 from django.shortcuts import render, HttpResponse, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib import messages
+from django.http import HttpResponseRedirect
 
 from django.views.generic.edit import CreateView
 from authentication import models
 from authentication.models import User
 from .models import Review, Ticket, UserFollows
-from .forms import TicketForm, TicketDeleteForm, ReviewForm, SubscribeForm, UserUnfollowForm
-
+from .forms import TicketForm, TicketDeleteForm, ReviewForm, SubscribeForm, UnSubscribeForm
+from django.views.generic import DeleteView
 
 from django.db.models import Count, Value, CharField, OuterRef, Subquery
 
 from itertools import chain
-from django.db.models import CharField, Value
+from django.db.models import CharField, Value, Q
 from django.shortcuts import render
-
-
-def home(request):
-    # recupérer le user connecté dans une variable
-    user = request.user 
-   
-    #return HttpResponse("Hello {user.username}, Welcome to LITRevu !".format(user=user))
-    return render(request, 'review/index.html')
-
-def about(request):
-    #return HttpResponse("About Us")
-    return render(request, 'review/about.html')
-
-def contact(request):
-    #return HttpResponse("Contact Us")
-    return render(request, 'review/contact.html')
 
 
 
@@ -41,12 +27,16 @@ def get_users_viewable_reviews(request):
     users_followed = UserFollows.objects.filter(user_id=request.user.id).values(
         "followed_user_id"
     )
-    reviews_to_my_tickets = Review.objects.filter(ticket__user_id=request.user.id)
+    
+    # Liste des utilisateurs suivis par l'utilisateur connecté
     list_id = [id["followed_user_id"] for id in users_followed]
-    list_id.append(request.user.id)
-    users_objects = User.objects.filter(id__in=list_id)
-    reviews_users_followed = Review.objects.filter(user__in=users_objects)
-    reviews_users_followed = reviews_users_followed | reviews_to_my_tickets
+    
+    # Filtrer les critiques des utilisateurs suivis
+    reviews_users_followed = Review.objects.filter(user__in=list_id)
+    
+    # Union des critiques des utilisateurs suivis et des critiques liées aux tickets de l'utilisateur
+    reviews_users_followed = reviews_users_followed | Review.objects.filter(ticket__user_id=request.user.id)
+
     return reviews_users_followed
 
 
@@ -60,7 +50,6 @@ def get_users_viewable_tickets(request):
     users_objects = User.objects.filter(id__in=list_id)
     tickets_users_followed = Ticket.objects.filter(user__in=users_objects)
     return tickets_users_followed
-
 
 
 
@@ -92,8 +81,6 @@ def feed(request):
     return render(request, 'review/feed.html', context={'posts': posts})
 
 
-
-
 class TicketCreateView(CreateView):
     model = Ticket
     fields = ['title', 'description', 'image']
@@ -105,8 +92,6 @@ class TicketCreateView(CreateView):
         return super().form_valid(form)
 
 
-
-# all tickets view
 class TicketListView(generic.ListView):
     model = Ticket
     template_name = 'review/ticket_list.html'
@@ -143,9 +128,6 @@ def delete_ticket(request, ticket_id):
     return render(request, 'review/ticket_delete.html', {'form': form, 'ticket': ticket})
 
 
-
-
-from django.http import HttpResponseRedirect
 class TicketUpdateView(generic.UpdateView):
     model = Ticket
     template_name = 'review/ticket_update.html'
@@ -168,9 +150,6 @@ class TicketUpdateView(generic.UpdateView):
         return super().form_valid(form)
 
 
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views import generic
-from .models import Ticket, Review
 
 class TicketReviewListView(LoginRequiredMixin, generic.ListView):
     template_name = 'review/ticket_review_list.html'
@@ -194,7 +173,7 @@ class TicketReviewListView(LoginRequiredMixin, generic.ListView):
         return items
 
 
-# 
+@login_required 
 def new_review_blank(request):
     """ creer une critique avec deux formulaires : le formulaire de ticket et le formulaire de review en utilisant une view basée sur une fonction"""
     user = request.user
@@ -222,6 +201,7 @@ def new_review_blank(request):
     return render(request, 'review/review_create_blank.html', {'ticket_form': ticket_form, 'review_form': review_form})
 
 
+@login_required
 def new_review(request, ticket_id):
     """Create a new review."""
     ticket_instance = Ticket.objects.get(id=ticket_id)
@@ -251,15 +231,12 @@ def new_review(request, ticket_id):
             {"ticket_instance": ticket_instance, "review_form": review_form},
         )
 
-
-# Liste des reviews
 class ReviewListView(generic.ListView):
     model = Review
     template_name = 'review/review_list.html'
     context_object_name = 'reviews'
     paginate_by = 5
     queryset = Review.objects.all().order_by('-time_created')
-
 
 
 class ReviewDetailView(generic.DetailView):
@@ -273,8 +250,7 @@ class ReviewDetailView(generic.DetailView):
         return context
 
 
-
-
+@login_required
 def user_profile(request, username):
     # Récupérer l'utilisateur dont le profil est affiché
     profile_user = get_object_or_404(User, username=username)
@@ -290,6 +266,7 @@ def user_profile(request, username):
     return render(request, 'review/user_profile.html', context)
 
 
+@login_required
 def follow_user(request):
     # Récupérer la liste des utilisateurs que vous suivez (following)
     user_following = UserFollows.objects.filter(user=request.user)
@@ -329,39 +306,23 @@ def follow_user(request):
         'user_following': user_following,
         'user_followers': user_followers,
     }
-    return render(request, 'review/user_follow.html', context)
+    return render(request, 'review/subscriptions.html', context)
 
 
 
-from django.views.generic import DeleteView
-from django.http import Http404,  HttpResponseForbidden
-
-
-from django.views import View
-class UserUnfollowView(View):
-    template_name = 'review/user_unfollow.html'
-
-
-    def post(self, request, *args, **kwargs):
-        user_id = self.kwargs.get('user_id')  # Utilisez 'user_id' car c'est le nom que vous avez utilisé dans votre URL
-        user_to_unfollow = get_object_or_404(User, id=user_id)
-
-        form = UserUnfollowForm(request.POST)
-
+@login_required
+def unfollow_user(request):
+    if request.method == 'POST':
+        form = UnSubscribeForm(request.POST)
         if form.is_valid():
-            # Supprimer la relation de suivi
-            UserFollows.objects.filter(follower=request.user, following=user_to_unfollow).delete()
-            return redirect('review:follower_user')  # Ajoutez l'URL appropriée
+            user_to_unfollow = form.cleaned_data['user_to_unfollow']
+            UserFollows.objects.filter(
+                user=request.user,
+                followed_user=user_to_unfollow
+            ).delete()
+            messages.success(request, f'Vous vous êtes désabonné de {user_to_unfollow.username}.')
+            return redirect("review:subscriptions")  # Redirigez vers la page d'accueil ou une autre vue.
+    else:
+        form = UnSubscribeForm()
 
-        context = {
-            'user_to_unfollow': user_to_unfollow,
-            'form': form,
-        }
-
-        return render(request, self.template_name, context)
-
-
-
-
-
-
+    return render(request, 'review/unfollow_user.html', {'form': form})
