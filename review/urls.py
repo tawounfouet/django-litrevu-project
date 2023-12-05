@@ -5,7 +5,7 @@ from . import views
 
 app_name = 'review'
 urlpatterns = [
-    path('feeds/', views.feed, name='feed'),
+    path('', views.feed, name='feed'),
     # user_profile
     path('user/<str:username>/', views.user_profile, name='user_profile'),
     path('subscriptions/', views.follow_user, name='subscriptions'),
