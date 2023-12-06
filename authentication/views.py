@@ -1,17 +1,9 @@
 from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import redirect, render
+from django.views.generic import View
 
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render, redirect, get_object_or_404
-from django.db.utils import IntegrityError
-from django.urls import reverse_lazy
-
-from django.views.generic import View, FormView
-from .forms import SignupForm, LoginForm
-
-from .models import User
-from review.models import UserFollows
+from .forms import LoginForm, SignupForm
 
 
 class LoginPage(View):
@@ -44,15 +36,6 @@ class LoginPage(View):
         context = {"form": form, "message": message}
 
         return render(request, self.template_name, context)
-
-
-
-
-
-## Une vue basé sur les fonction
-# - Post : creer un abonnement
-# - quand on est pas en post : créer des requetes pour avoir
-
 
 
 def signup_page(request):
